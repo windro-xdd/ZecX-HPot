@@ -1,0 +1,14 @@
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+zecx-deploy-linux
+
+# Log files
+*.log
+
+# IDE settings
+.vscode/
+.idea/
