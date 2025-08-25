@@ -1,6 +1,10 @@
 package emulators
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
@@ -115,13 +119,19 @@ func handleSSHConnection(nConn net.Conn, config *ssh.ServerConfig) {
 }
 
 func generatePrivateKey() []byte {
-	// This is a placeholder for key generation.
-	// In a real implementation, use crypto/rand and crypto/rsa.
-	// For now, returning a pre-generated insecure key for testing.
-	key := `-----BEGIN RSA PRIVATE KEY-----
-... (a real key would be here) ...
------END RSA PRIVATE KEY-----`
-	return []byte(key)
+	// Generate a 2048-bit RSA key at runtime and return it in PEM format.
+	// This avoids embedding a static private key in the repo while still
+	// providing a valid key for the SSH emulator during testing.
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Fatalf("[SSH] Failed to generate private key: %v", err)
+	}
+	privDER := x509.MarshalPKCS1PrivateKey(priv)
+	pemBlock := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: privDER,
+	}
+	return pem.EncodeToMemory(pemBlock)
 }
 
 // --- HTTP Emulator ---
