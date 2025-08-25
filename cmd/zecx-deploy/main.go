@@ -14,18 +14,26 @@ import (
 )
 
 func main() {
-	uninstallFlag := flag.Bool("uninstall", false, "Uninstall the ZecX-Honeypot and restore the system.")
-	flag.Parse()
-
-	// Set up logging. In a real scenario, this would write to a hidden, rotated file.
 	logFile, err := os.OpenFile("zecx-honeypot.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open log file: %v\n", err)
+		fmt.Fprintf(os.Stderr, "FATAL: Failed to open log file: %v\n", err)
 		os.Exit(1)
 	}
 	defer logFile.Close()
 	log.SetOutput(logFile)
-	log.Println("ZecX-Honeypot starting...")
+	log.Println("ZecX-Honeypot instance starting...")
+
+	if stealth.IsBackground() {
+		runBackgroundTasks()
+		return
+	}
+
+	runForegroundTasks()
+}
+
+func runForegroundTasks() {
+	uninstallFlag := flag.Bool("uninstall", false, "Uninstall the ZecX-Honeypot and restore the system.")
+	flag.Parse()
 
 	if *uninstallFlag {
 		if err := uninstall.CleanUp(); err != nil {
@@ -41,7 +49,7 @@ func main() {
 	if !cli.AcceptTerms() {
 		log.Println("Deployment canceled by user at T&C prompt.")
 		fmt.Println("Deployment canceled.")
-		os.Exit(1)
+		os.Exit(0)
 	}
 
 	code, err := pairing.GenerateCode()
@@ -53,25 +61,27 @@ func main() {
 	fmt.Printf("Your one-time pairing code is: %s\n", code)
 	fmt.Println("Use this on the web dashboard to monitor this honeypot.")
 	fmt.Println("The tool will now fork into the background to complete the system transformation.")
-	log.Printf("Generated pairing code: %s", code)
+	log.Printf("Generated pairing code: %s. Forking to background.", code)
 
-	// Fork to background
-	if !stealth.Daemonize() {
-		// This is the parent process, it can exit now.
-		log.Println("Parent process exiting after forking.")
-		return
-	}
+	stealth.Daemonize(code)
+}
 
-	// From here on, we are in the background process.
+func runBackgroundTasks() {
 	log.Println("--- Background process started ---")
 
-	// 1. Perform System Transformation
+	pairingCode := stealth.GetPairingCode()
+	if pairingCode == "" {
+		log.Println("FATAL: Background process started without a pairing code.")
+		os.Exit(1)
+	}
+	log.Printf("Background process operating with pairing code: %s", pairingCode)
+
 	if err := transform.Apply(); err != nil {
-		log.Printf("Fatal error during system transformation: %v", err)
-		os.Exit(1) // Exit silently
+		log.Printf("FATAL: Error during system transformation: %v", err)
+		uninstall.CleanUp()
+		os.Exit(1)
 	}
 
-	// 2. Establish Covert Communication (This is a blocking call)
 	log.Println("Handing off to covert communication module.")
-	covert.StartTunnel(code) // This will run forever
+	covert.StartTunnel(pairingCode)
 }
