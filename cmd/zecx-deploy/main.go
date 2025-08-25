@@ -23,6 +23,8 @@ func main() {
 	log.SetOutput(logFile)
 	log.Println("ZecX-Honeypot instance starting...")
 
+	// ...existing startup code...
+
 	if stealth.IsBackground() {
 		runBackgroundTasks()
 		return
@@ -36,17 +38,7 @@ func runForegroundTasks() {
 	uninstallFlag := flag.Bool("uninstall", false, "Uninstall the ZecX-Honeypot and restore the system.")
 	flag.Parse()
 
-	// If user ran as: ./zecx-deploy uninstall
-	if len(os.Args) > 1 && os.Args[1] == "uninstall" {
-		if err := uninstall.CleanUp(); err != nil {
-			log.Printf("Error during uninstallation: %v\n", err)
-			fmt.Fprintf(os.Stderr, "Error during uninstallation: %v\n", err)
-			os.Exit(1)
-		}
-		log.Println("ZecX-Honeypot has been successfully uninstalled.")
-		fmt.Println("ZecX-Honeypot has been successfully uninstalled.")
-		return
-	}
+	// ...existing flag handling (use --uninstall to run cleanup)
 
 	if *uninstallFlag {
 		if err := uninstall.CleanUp(); err != nil {

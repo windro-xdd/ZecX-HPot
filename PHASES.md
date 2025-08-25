@@ -55,15 +55,18 @@ This phase focuses on building out the core components responsible for transform
 
 This phase implements the critical non-functional requirements for stealth and security.
 
-*   **[ ] Process Masking (`internal/stealth`):**
+*   **[~] Process Masking (`internal/stealth`):**
     *   **Goal:** Hide the honeypot processes from the attacker.
     *   **Task:** Implement logic to change the process name as seen in tools like `ps` and `top` to common system process names (`kworker`, `dbus-daemon`, etc.).
+    *   **Status:** scaffolding added (`internal/stealth/processmask.go`) — best-effort `/proc/self/comm` write.
 *   **[ ] Binary Self-Destruction (`internal/stealth`):**
     *   **Goal:** Remove the initial executable to hide the entry vector.
     *   **Task:** Implement a `SelfDestruct()` function that deletes the `zecx-deploy` binary from the filesystem after the background process is successfully running.
+    *   **Status:** placeholder added (`internal/stealth/selfdestruct.go`) — safe no-op.
 *   **[ ] Service Sandboxing (`internal/transform/emulators`):**
     *   **Goal:** Isolate emulated services from the host system.
     *   **Task:** Research and implement sandboxing techniques (e.g., Linux namespaces, cgroups, seccomp) for each service emulator to ensure an exploit does not compromise the host.
+    *   **Status:** TODO — research and placeholder guidance.
 
 ---
 
@@ -103,4 +106,12 @@ This is the final phase to bring all components together into a production-ready
 *   **[ ] Integration:** Connect the real service emulators to the covert tunneling module to ensure all captured data is exfiltrated correctly.
 *   **[ ] End-to-End Testing:** Perform a full deployment on a clean VM to validate the entire user workflow, from running the binary to seeing data appear on a test dashboard.
 *   **[ ] Security Audit:** Review all code for potential vulnerabilities, paying special attention to the sandboxing implementation and the covert channel.
+## Addendum: SSH Pseudo-Shell and Interaction Improvements
+
+This section outlines future work related to the SSH emulator and its interaction capabilities.
+
+*   **[ ] SSH Pseudo-Shell:** 
+    *   **Goal:** Enhance the SSH emulator to provide a more realistic shell experience.
+    *   **Task:** Implement features that allow for command history, session logging, and interaction tracking.
+
 *   **[ ] Finalize `README.md`:** Update this document to be a comprehensive user manual for the final product.
