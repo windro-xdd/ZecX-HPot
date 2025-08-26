@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+      - name: Install modules
+        run: go mod download
+      - name: Run go vet
+        run: go vet ./...
+      - name: Run tests (with race detector)
+        run: go test -race ./... -v
+      - name: Build
+        run: go build ./...
+      - name: Linux smoke test (demo)
+        run: |
+          chmod +x tools/demo/smoke.sh
+          ./tools/demo/smoke.sh

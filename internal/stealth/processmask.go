@@ -20,7 +20,12 @@ func MaskProcess(name string) error {
         }
         return nil
     }
-    // If not available, just return nil (no-op) but keep a log entry so operators know we tried.
-    log.Println("[stealth] /proc/self/comm not writable or not present; skipping real mask.")
+    // If /proc approach failed, we intentionally avoid direct syscalls here
+    // to keep the implementation portable and conservative. Advanced process
+    // masking (prctl, setproctitle) would require platform-specific
+    // implementations and careful testing.
+
+    // If not available or failed, just return nil (no-op) but keep a log entry so operators know we tried.
+    log.Println("[stealth] process name masking not available on this platform or lacking permissions; skipping.")
     return nil
 }

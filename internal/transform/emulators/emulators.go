@@ -6,16 +6,37 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
 	"os"
 
+	"zecx-deploy/internal/covert"
+	"zecx-deploy/internal/stealth"
+
 	"golang.org/x/crypto/ssh"
 )
 
 var serverStopCh = make(chan struct{})
+
+// sendLogAsync posts a textual log to the configured collector endpoint if set.
+// It is intentionally best-effort and non-blocking.
+func sendLogAsync(kind, content string) {
+	endpoint := os.Getenv("ZECX_COLLECTOR_ENDPOINT")
+	if endpoint == "" {
+		return
+	}
+	pairing := stealth.GetPairingCode()
+	if pairing == "" {
+		pairing = "unknown"
+	}
+	msg := fmt.Sprintf("[%s] %s", kind, content)
+	go func() {
+		if err := covert.SendData(endpoint, pairing, []byte(msg)); err != nil {
+			log.Printf("[covert] SendData error: %v", err)
+		}
+	}()
+}
 
 // Start launches the high-interaction service emulators as concurrent goroutines.
 func Start() error {
@@ -43,7 +64,9 @@ func Stop() error {
 func startSSHEmulator(addr string) {
 	config := &ssh.ServerConfig{
 		PasswordCallback: func(c ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
-			log.Printf("[SSH] Login attempt: user=%s, pass=%s from %s", c.User(), string(pass), c.RemoteAddr())
+			entry := fmt.Sprintf("Login attempt: user=%s, pass=%s from %s", c.User(), string(pass), c.RemoteAddr())
+			log.Printf("[SSH] %s", entry)
+			sendLogAsync("ssh_login", entry)
 			return nil, fmt.Errorf("password rejected for %q", c.User())
 		},
 	}
@@ -105,7 +128,9 @@ func handleSSHConnection(nConn net.Conn, config *ssh.ServerConfig) {
 		go func(in <-chan *ssh.Request) {
 			for req := range in {
 				// We are not implementing a full shell, just logging requests.
-				log.Printf("[SSH] Request type: %s, Payload: %s", req.Type, string(req.Payload))
+				entry := fmt.Sprintf("Request type: %s, Payload: %s", req.Type, string(req.Payload))
+				log.Printf("[SSH] %s", entry)
+				sendLogAsync("ssh_req", entry)
 				if req.WantReply {
 					req.Reply(false, nil)
 				}
@@ -114,7 +139,18 @@ func handleSSHConnection(nConn net.Conn, config *ssh.ServerConfig) {
 
 		// A very basic "shell"
 		channel.Write([]byte("Welcome to the honeypot.\r\n$ "))
-		io.Copy(io.Discard, channel) // Read and discard all input
+		// Read input and log it to the collector
+		buf := make([]byte, 4096)
+		for {
+			n, err := channel.Read(buf)
+			if err != nil {
+				break
+			}
+			if n > 0 {
+				entry := fmt.Sprintf("ssh_input from %s: %s", nConn.RemoteAddr(), string(buf[:n]))
+				sendLogAsync("ssh_input", entry)
+			}
+		}
 	}
 }
 
@@ -137,7 +173,9 @@ func generatePrivateKey() []byte {
 // --- HTTP Emulator ---
 func startHTTPEmulator(addr string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("[HTTP] Request from %s: %s %s", r.RemoteAddr, r.Method, r.URL.String())
+	entry := fmt.Sprintf("Request from %s: %s %s", r.RemoteAddr, r.Method, r.URL.String())
+	log.Printf("[HTTP] %s", entry)
+	sendLogAsync("http_req", entry)
 		// Serve a fake "404 Not Found" page to most requests
 		http.NotFound(w, r)
 	})
@@ -166,6 +204,7 @@ func startFTPEmulator(addr string) {
 func handleFTPConnection(conn net.Conn) {
 	defer conn.Close()
 	log.Printf("[FTP] Connection from %s", conn.RemoteAddr())
+	sendLogAsync("ftp_conn", fmt.Sprintf("Connection from %s", conn.RemoteAddr()))
 	conn.Write([]byte("220 ProFTPD 1.3.5a Server (Debian) [::ffff:127.0.0.1]\r\n"))
 	buf := make([]byte, 1024)
 	for {
@@ -173,7 +212,9 @@ func handleFTPConnection(conn net.Conn) {
 		if err != nil {
 			return
 		}
-		log.Printf("[FTP] Received from %s: %s", conn.RemoteAddr(), string(buf[:n]))
+		entry := fmt.Sprintf("Received from %s: %s", conn.RemoteAddr(), string(buf[:n]))
+		log.Printf("[FTP] %s", entry)
+		sendLogAsync("ftp_line", entry)
 		// Simple canned responses
 		if n > 0 {
 			conn.Write([]byte("530 Please login with USER and PASS.\r\n"))

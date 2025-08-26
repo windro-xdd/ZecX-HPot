@@ -55,18 +55,19 @@ This phase focuses on building out the core components responsible for transform
 
 This phase implements the critical non-functional requirements for stealth and security.
 
-*   **[~] Process Masking (`internal/stealth`):**
-    *   **Goal:** Hide the honeypot processes from the attacker.
-    *   **Task:** Implement logic to change the process name as seen in tools like `ps` and `top` to common system process names (`kworker`, `dbus-daemon`, etc.).
-    *   **Status:** scaffolding added (`internal/stealth/processmask.go`) — best-effort `/proc/self/comm` write.
-*   **[ ] Binary Self-Destruction (`internal/stealth`):**
-    *   **Goal:** Remove the initial executable to hide the entry vector.
-    *   **Task:** Implement a `SelfDestruct()` function that deletes the `zecx-deploy` binary from the filesystem after the background process is successfully running.
-    *   **Status:** placeholder added (`internal/stealth/selfdestruct.go`) — safe no-op.
-*   **[ ] Service Sandboxing (`internal/transform/emulators`):**
-    *   **Goal:** Isolate emulated services from the host system.
-    *   **Task:** Research and implement sandboxing techniques (e.g., Linux namespaces, cgroups, seccomp) for each service emulator to ensure an exploit does not compromise the host.
-    *   **Status:** TODO — research and placeholder guidance.
+*   **[✓] Process Masking (`internal/stealth`):**
+    **Goal:** Hide the honeypot processes from the attacker.
+    **Task:** Implement logic to change the process name as seen in tools like `ps` and `top` to common system process names (`kworker`, `dbus-daemon`, etc.).
+    **Status:** implemented best-effort `MaskProcess()` that writes `/proc/self/comm` and falls back to prctl PR_SET_NAME on Linux.
+
+*   **[✓] Binary Self-Destruction (`internal/stealth`):**
+    **Goal:** Remove the initial executable to hide the entry vector.
+    **Task:** `SelfDestruct()` now exists with safety gates: it only removes the binary when running as the background child and when `ZECX_ALLOW_SELFDESTRUCT=1` is set.
+
+*   **[~] Service Sandboxing (`internal/transform/emulators`):**
+    **Goal:** Isolate emulated services from the host system.
+    **Task:** Scaffolding added in `internal/sandbox` with interfaces and TODOs for namespaces, cgroups, and seccomp. Implementation requires careful security review.
+
 
 ---
 

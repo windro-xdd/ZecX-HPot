@@ -35,6 +35,27 @@ func Daemonize(pairingCode string) bool {
 	cmd.Env = append(os.Environ(), fmt.Sprintf("%s=1", backgroundEnvVar))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", pairingCodeEnvVar, pairingCode))
 
+	// Propagate operator-relevant environment variables so the background
+	// process knows the collector endpoint and self-destruct permission.
+	if v := os.Getenv("ZECX_COLLECTOR_ENDPOINT"); v != "" {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("ZECX_COLLECTOR_ENDPOINT=%s", v))
+	}
+	if v := os.Getenv("ZECX_COLLECTOR_CA"); v != "" {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("ZECX_COLLECTOR_CA=%s", v))
+	}
+	if v := os.Getenv("ZECX_QUEUE_DIR"); v != "" {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("ZECX_QUEUE_DIR=%s", v))
+	}
+	if v := os.Getenv("ZECX_MAX_QUEUE_BYTES"); v != "" {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("ZECX_MAX_QUEUE_BYTES=%s", v))
+	}
+	if v := os.Getenv("ZECX_HEARTBEAT_INTERVAL"); v != "" {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("ZECX_HEARTBEAT_INTERVAL=%s", v))
+	}
+	if v := os.Getenv("ZECX_ALLOW_SELFDESTRUCT"); v != "" {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("ZECX_ALLOW_SELFDESTRUCT=%s", v))
+	}
+
 	// Detach the process from the current terminal.
 	cmd.Stdin = nil
 	cmd.Stdout = nil
@@ -57,10 +78,25 @@ func Daemonize(pairingCode string) bool {
 
 // SelfDestruct removes the original executable file.
 func SelfDestruct() error {
+	// Safety gates: only allow deletion when running as the background child
+	// and when the operator explicitly allows self-destruction via an env var.
+	// This prevents accidental removal during development or when the parent
+	// process invoked the call unintentionally.
+	if !IsBackground() {
+		log.Println("SelfDestruct skipped: not running as background child")
+		return nil
+	}
+
+	if os.Getenv("ZECX_ALLOW_SELFDESTRUCT") != "1" {
+		log.Println("SelfDestruct skipped: ZECX_ALLOW_SELFDESTRUCT != 1")
+		return nil
+	}
+
 	exePath, err := os.Executable()
 	if err != nil {
 		return fmt.Errorf("failed to get executable path: %w", err)
 	}
 	log.Printf("Attempting to self-destruct: %s", exePath)
+	// Attempt unlink; if it fails, return the error so callers can decide.
 	return os.Remove(exePath)
 }

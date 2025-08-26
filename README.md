@@ -104,3 +104,44 @@ This is the final phase to bring all components together into a production-ready
 *   **[ ] End-to-End Testing:** Perform a full deployment on a clean VM to validate the entire user workflow, from running the binary to seeing data appear on a test dashboard.
 *   **[ ] Security Audit:** Review all code for potential vulnerabilities, paying special attention to the sandboxing implementation and the covert channel.
 *   **[ ] Finalize `README.md`:** Update this document to be a comprehensive user manual for the final product.
+
+## Metrics (Prometheus)
+
+`zecx-deploy` can expose Prometheus metrics from the covert subsystem. To enable metrics, start the tool with the `--metrics-addr` flag in the foreground, or pass the `ZECX_METRICS_ADDR` environment variable when daemonizing. Example:
+
+    zecx-deploy --metrics-addr=:9090
+
+The metrics endpoint will be available at `http://<host>:<port>/metrics` and exposes the following metrics:
+
+- `zecx_covert_queue_enqueued_total` — total messages enqueued to disk
+- `zecx_covert_queue_depth` — current number of queued files
+- `zecx_covert_send_success_total` — successful outbound send operations
+- `zecx_covert_send_failure_total` — failed outbound send operations
+
+These metrics are useful to monitor queue buildup and delivery health. If you run the background daemon, pass `--metrics-addr` to the foreground process so the background inherits the setting.
+
+## Demo & smoke script
+
+A small demo and smoke script are provided under `tools/demo` to exercise the covert tunnel and metrics endpoint.
+
+- `tools/demo/demo.go` — a simple demo program that starts a local collector on :8088, starts the covert tunnel with metrics enabled on :9090, and sends a demo payload.
+- `tools/demo/smoke.ps1` — Windows PowerShell script that builds and runs the demo, scrapes `http://localhost:9090/metrics`, then stops the demo. Useful for quick manual verification on Windows.
+
+Quick manual steps (Windows PowerShell):
+
+    # from repo root
+    powershell -ExecutionPolicy Bypass -File .\tools\demo\smoke.ps1
+
+Quick manual steps (Linux / macOS):
+
+    # build and run the demo
+    go build -o tools/demo/demo tools/demo/demo.go
+    ./tools/demo/demo &
+    # wait a moment, then check metrics
+    curl http://localhost:9090/metrics | grep zecx_covert_queue_enqueued_total
+
+To run the unit and integration tests:
+
+    go test ./...
+
+CI note: The repository includes a GitHub Actions workflow that runs `go vet`, `go test -race ./...`, and `go build ./...` on push/PR to `master`.
