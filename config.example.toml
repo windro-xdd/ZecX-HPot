@@ -1,0 +1,27 @@
+# Example configuration for proto-honeypot
+backend_url = "https://your-backend.example/api/logs"
+honeypot_root = "./honeypot_fs"
+listen_addr = "0.0.0.0"
+report_interval_seconds = 30
+apply_iptables = false
+
+# Optional: backend bearer token (if your API expects Authorization: Bearer <token>)
+# backend_token = "YOUR_TOKEN_HERE"
+
+# Optional: UDP ports to listen on (array). Default is [5353] if omitted.
+udp_ports = [5353]
+
+# Optional: encrypt logs at rest before persisting pending files
+# Set to true to enable AES-256-GCM encryption of pending files.
+encrypt_logs = false
+# Base64-encoded 32-byte key (optional). Example (DO NOT use this in production):
+# encryption_key_base64 = "w7m6..."
+# Max number of pending_* files to retain in honeypot_root/logs before pruning oldest
+max_pending_files = 100
+
+# You can preview resolved ports without running by adding --list-ports to CLI
+
+# To generate a key on Linux/macOS:
+#   head -c32 /dev/urandom | base64
+# On PowerShell:
+#   [Convert]::ToBase64String((1..32 | % { [byte](Get-Random -Max 256) }))

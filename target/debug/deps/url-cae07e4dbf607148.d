@@ -1,0 +1,11 @@
+C:\Users\Windroxd\Documents\ZecurX-Projects\proto-honeypot\target\debug\deps\url-cae07e4dbf607148.d: C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\lib.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\host.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\origin.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\parser.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\path_segments.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\slicing.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\quirks.rs
+
+C:\Users\Windroxd\Documents\ZecurX-Projects\proto-honeypot\target\debug\deps\liburl-cae07e4dbf607148.rmeta: C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\lib.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\host.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\origin.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\parser.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\path_segments.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\slicing.rs C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\quirks.rs
+
+C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\lib.rs:
+C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\host.rs:
+C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\origin.rs:
+C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\parser.rs:
+C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\path_segments.rs:
+C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\slicing.rs:
+C:\Users\Windroxd\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\url-2.5.7\src\quirks.rs:

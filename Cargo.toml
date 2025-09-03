@@ -1,0 +1,32 @@
+[package]
+name = "proto-honeypot"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+# Enable to develop/build on non-Linux (skips strict Linux compile error)
+allow-nonlinux-dev = []
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+clap = { version = "4.2", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+rand = "0.8"
+uuid = { version = "1.4", features = ["v4"] }
+lipsum = "0.8"
+anyhow = "1.0"
+time = "0.3"
+dirs = "4.0"
+toml = "0.7"
+chrono = { version = "0.4", features = ["serde"] }
+filetime = "0.2"
+aes-gcm = "0.10"
+base64 = "0.21"
+rand_core = "0.6"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt","env-filter","json"] }
+once_cell = "1.19"
+whoami = "1.6.1"
+libc = "0.2.175"

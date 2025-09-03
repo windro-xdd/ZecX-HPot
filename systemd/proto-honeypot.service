@@ -1,0 +1,13 @@
+[Unit]
+Description=Proto Honeypot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/lib/proto-honeypot
+ExecStart=/usr/local/bin/proto-honeypot --config /etc/proto-honeypot/config.toml
+Restart=on-failure
+User=honeypot
+
+[Install]
+WantedBy=multi-user.target

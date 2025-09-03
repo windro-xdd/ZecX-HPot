@@ -1,0 +1,13 @@
+# proto-honeypot configuration
+listen_addr = "0.0.0.0"
+udp_ports = [5353]
+# Expose metrics to both WSL and Windows
+metrics_addr = "0.0.0.0:9100"
+# No remote backend by default
+backend_url = ""
+report_interval_seconds = 60
+apply_iptables = false
+log_format = "text"
+# Optional: set to true and provide encryption_key_base64 to encrypt pending logs
+encrypt_logs = false
+max_pending_files = 100
